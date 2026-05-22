@@ -34,6 +34,20 @@ def text_to_textnodes(text):
 
     return link_split
 
+# converts blocks of Markdown text to individual strings
+
+def markdown_to_blocks(md):
+    blocks = []
+    
+    split_doc =  md.split("\n\n") # only split on two newline chars
+    for line in split_doc:
+        if line == "":
+            continue
+        line = line.strip() # guard check for leading or trailing whitespace or newlines
+        blocks.append(line)
+    return blocks
+
+
 
 # split_nodes functions
 # Splitting plain text nodes into component nodes with correct enum membership

@@ -8,11 +8,52 @@ from conversions import (
     extract_markdown_links,
     split_nodes_image,
     split_nodes_link,
-    text_to_textnodes
+    text_to_textnodes,
+    markdown_to_blocks
 )
 
 
-class Text_text_to_textnode(unittest.TestCase):
+class Test_markdown_blocks(unittest.TestCase):
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+    def test_md_italic_blocks(self):
+        md = """_This text begins_
+with some italics in _awkward
+_places. But it is in good **shape**.
+
+# Header here by some logic
+
+
+Extra space in the mix."""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "_This text begins_\nwith some italics in _awkward\n_places. But it is in good **shape**.",
+                "# Header here by some logic",
+                "Extra space in the mix."
+            ]
+        )
+
+class Test_text_to_textnode(unittest.TestCase):
 
     def test_all_conversion_errors(self):
         original_node = "I [link](www.hi.com) but do not **close my _bold_ `text`."
