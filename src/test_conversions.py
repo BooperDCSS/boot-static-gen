@@ -9,9 +9,41 @@ from conversions import (
     split_nodes_image,
     split_nodes_link,
     text_to_textnodes,
-    markdown_to_blocks
+    markdown_to_blocks,
+    block_to_block_type,
+    BlockType
 )
 
+class Test_block_type(unittest.TestCase):
+    def test_block_ordlist(self):
+        md = "1. Love\n2. Me\n3. Some\n4. Autechre"
+        md_block_type = block_to_block_type(md)
+        self.assertEqual(md_block_type, BlockType.ORD_LIST)
+
+    def test_failed_ordlist_blocktype(self):
+        md = "1. Love\n2. Me\n4. Some\n3. Autechre"
+        md_block_type = block_to_block_type(md)
+        self.assertEqual(md_block_type, BlockType.PARAGRAPH)
+
+    def test_block_type_header_3(self):
+        md = "### A level 3 header"
+        md_block_type = block_to_block_type(md)
+        self.assertEqual(md_block_type, BlockType.HEADING)
+
+    def test_block_type_code(self):
+        md = """```\nThis is some block code\nAcross two lines\nLike this```"""
+        md_block_type = block_to_block_type(md)
+        self.assertEqual(md_block_type, BlockType.CODE)
+
+    def test_block_type_code(self):
+        md = "> Lets make this two quotes\n> For good measure."
+        md_block_type = block_to_block_type(md)
+        self.assertEqual(md_block_type, BlockType.QUOTE)
+
+    def test_block_type_unord(self):
+        md = "- A list of lists\n- To test"
+        md_block_type = block_to_block_type(md)
+        self.assertEqual(md_block_type, BlockType.UNORD_LIST)
 
 class Test_markdown_blocks(unittest.TestCase):
     def test_markdown_to_blocks(self):

@@ -21,6 +21,44 @@ def text_node_to_html_node(text_node):
     if text_node.text_type == TextType.IMAGE:
         return LeafNode("img", "", {"src": text_node.url, "alt": text_node.text})
 
+# Returns block type based on individual blocks of Markdown
+
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORD_LIST = "unordered list"
+    ORD_LIST = "ordered list"
+
+def block_to_block_type(block):
+    heading_match = re.match(r"^#{1,6} ", block) # the ^ char checks beginning of string
+    lines = block.split("\n")
+
+    if heading_match:
+        return BlockType.HEADING
+    elif block.startswith("```\n") and block.endswith("```"):
+        return BlockType.CODE
+    elif block.startswith(">"):
+        for line in lines:
+            if not line.startswith(">"):
+                return BlockType.PARAGRAPH
+        return BlockType.QUOTE
+    elif block.startswith("- "):
+        for line in lines:
+            if not line.startswith("- "):
+                return BlockType.PARAGRAPH
+        return BlockType.UNORD_LIST
+    elif block.startswith("1. "):
+        line_number = 1
+        for line in lines:
+            if not line.startswith(f"{line_number}. "):
+                return BlockType.PARAGRAPH
+            line_number += 1
+        return BlockType.ORD_LIST
+    else:
+        return BlockType.PARAGRAPH
+
 # converts Markdown text to a list of TextNodes using the split_nodes functions
 
 def text_to_textnodes(text):
@@ -138,5 +176,3 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
-
-
