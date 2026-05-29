@@ -3,9 +3,103 @@ from enum import Enum
 from htmlnode import HTMLNode, LeafNode, ParentNode
 from textnode import TextType, TextNode
 
-# Creating HTML-related nodes from TextNodes...
+# convert full markdown document to single parent HTMLNode with children
 
-def text_node_to_html_node(text_node):
+def markdown_to_html_node(markdown: str) -> HTMLNode:
+    all_children = []
+
+    md_blocks = markdown_to_blocks(markdown)
+    for block in md_blocks:
+        block_type = block_to_block_type(block)
+        if block_type == BlockType.HEADING:
+            all_children.append(ParentNode(
+                f"h{header_counter(block)}", text_to_children(block)
+            ))
+        elif block_type == BlockType.PARAGRAPH:
+            all_children.append(ParentNode(
+               "p", text_to_children(block)
+            ))
+        elif block_type == BlockType.QUOTE:
+            all_children.append(ParentNode(
+                "blockquote", text_to_children(block)
+            ))
+        elif block_type == BlockType.UNORD_LIST:
+            all_children.append(ParentNode(
+                "ul", text_to_children(block)
+            ))
+        elif block_type == BlockType.ORD_LIST:
+            all_children.append(ParentNode(
+                "ol", text_to_children(block)
+            ))
+        elif block_type == BlockType.CODE:
+            all_children.append(ParentNode(
+                "pre", render_codeblock_text(block)
+            ))
+        else:
+            raise ValueError("Block does not match existing block types")
+
+    return ParentNode("div", all_children)
+
+
+def text_to_children(md: str) -> list[HTMLNode]:
+    child_list = []
+    if md.startswith("#"):
+        child_text = md.lstrip("# ")
+        text_node_list = text_to_textnodes(child_text)
+        for node in text_node_list:
+            child_list.append(text_node_to_html_node(node))
+    elif md.startswith(">"):
+        child_text = md.lstrip("> ")
+        text_node_list = text_to_textnodes(child_text)
+        for node in text_node_list:
+            child_list.append(text_node_to_html_node(node))
+    elif md.startswith("- "):
+        child_list.extend(create_li_nodes(md))
+    elif md.startswith("1. "):
+        child_list.extend(create_li_nodes(md))
+    else:
+        child_text = md.lstrip().replace("\n", " ").rstrip()
+        text_node_list = text_to_textnodes(child_text)
+        for node in text_node_list:
+            child_list.append(text_node_to_html_node(node))
+
+    return child_list
+
+# handle codeblock text by skipping the markdown conversion
+def render_codeblock_text(text: str) -> LeafNode:
+    text = text.lstrip("\n```").rstrip("```")
+    code_leaf = text_node_to_html_node(TextNode(text, TextType.CODE_TEXT))
+    return [code_leaf]
+    
+# quick way to create <li> Leaf Nodes for <ul> and <ol>
+def create_li_nodes(md: str) -> list[LeafNode]:
+    li_list = []
+
+    if md.startswith("- "):
+        li_split = md.split("- ")
+    if md.startswith("1. "):
+        li_split = re.split(r"^\d\. ", md, flags=re.MULTILINE)
+    for entry in li_split:
+        if entry == "\n" or entry == "":
+            continue
+        entry = entry.rstrip("\n")
+        li_list.append(LeafNode("li", entry)) 
+
+    return li_list
+
+
+# easy way to get the right heading number from number of # in string
+def header_counter(block: str) -> int:
+    count = 0
+    for c in block:
+        if c == "#":
+            count += 1
+        if c == " ":
+            return count
+
+# Creating HTML-related inline nodes from TextNodes...
+
+def text_node_to_html_node(text_node: TextNode) -> LeafNode:
     if text_node.text_type not in TextType:
         raise ValueError("HTML element not yet supported")
     if text_node.text_type == TextType.PLAIN_TEXT:
@@ -31,7 +125,7 @@ class BlockType(Enum):
     UNORD_LIST = "unordered list"
     ORD_LIST = "ordered list"
 
-def block_to_block_type(block):
+def block_to_block_type(block: str) -> BlockType:
     heading_match = re.match(r"^#{1,6} ", block) # the ^ char checks beginning of string
     lines = block.split("\n")
 
@@ -59,9 +153,9 @@ def block_to_block_type(block):
     else:
         return BlockType.PARAGRAPH
 
-# converts Markdown text to a list of TextNodes using the split_nodes functions
+# converts full Markdown text to a list of TextNodes using the split_nodes functions
 
-def text_to_textnodes(text):
+def text_to_textnodes(text: str) -> list[TextNode]:
 
     original_text = TextNode(text, TextType.PLAIN_TEXT)
     bold_split = split_nodes_delimiter([original_text], "**", TextType.BOLD)
@@ -72,11 +166,11 @@ def text_to_textnodes(text):
 
     return link_split
 
-# converts blocks of Markdown text to individual strings
+# converts multi-line Markdown text to individual "blocks" of strings using \n\n
 
-def markdown_to_blocks(md):
+def markdown_to_blocks(md: str) -> list[str]:
     blocks = []
-    
+
     split_doc =  md.split("\n\n") # only split on two newline chars
     for line in split_doc:
         if line == "":
@@ -91,7 +185,7 @@ def markdown_to_blocks(md):
 # Splitting plain text nodes into component nodes with correct enum membership
 # delimiter covers plain, bold, italic, and code text
 
-def split_nodes_delimiter(nodes, delimiter, text_type):
+def split_nodes_delimiter(nodes: list[TextNode], delimiter: str, text_type: TextType) -> list[TextNode]:
     new_nodes = []
 
     for node in nodes:
@@ -112,7 +206,7 @@ def split_nodes_delimiter(nodes, delimiter, text_type):
     return new_nodes
 
 
-def split_nodes_image(nodes):
+def split_nodes_image(nodes: list[TextNode]) -> list[TextNode]:
     new_nodes = []
 
     for node in nodes:
@@ -139,7 +233,7 @@ def split_nodes_image(nodes):
 
     return new_nodes
 
-def split_nodes_link(nodes):
+def split_nodes_link(nodes: list[TextNode]) -> list[TextNode]:
     new_nodes = []
 
     for node in nodes:
@@ -169,10 +263,10 @@ def split_nodes_link(nodes):
 # Helper functions; extract Markdown to tuples containing Image and URL data
 # provides lists of tuples, e.g. [("image", "google.com")]
 
-def extract_markdown_images(text):
+def extract_markdown_images(text: str) -> tuple[str, str]:
     matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
 
-def extract_markdown_links(text):
+def extract_markdown_links(text: str) -> tuple[str, str]:
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches

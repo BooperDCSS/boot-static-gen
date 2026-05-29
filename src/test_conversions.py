@@ -11,8 +11,132 @@ from conversions import (
     text_to_textnodes,
     markdown_to_blocks,
     block_to_block_type,
-    BlockType
+    BlockType,
+    markdown_to_html_node,
+    header_counter,
+    text_to_children,
 )
+
+class Text_md_to_html(unittest.TestCase):
+
+    def test_codeblock(self):
+        md = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+        )
+
+    def test_paragraphs(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+        )
+
+    def test_code_block(self):
+        md = """
+Here is a code **block** that should not render markdown:
+
+```
+Do not render _this_ text as **markdown**
+please. I would be upset if you did.
+```
+
+The end."""
+        md_html_convert = markdown_to_html_node(md)
+        html = md_html_convert.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>Here is a code <b>block</b> that should not render markdown:</p><pre><code>Do not render _this_ text as **markdown**\nplease. I would be upset if you did.\n</code></pre><p>The end.</p></div>"
+        )
+
+
+    def test_ordered_list(self):
+        md = """
+1. I love
+2. listening to
+3. Coil and Autechre
+
+They are two of my _favorite_ bands"""
+        md_html_convert = markdown_to_html_node(md)
+        html = md_html_convert.to_html()
+        self.assertEqual(
+            html,
+            "<div><ol><li>I love</li><li>listening to</li><li>Coil and Autechre</li></ol><p>They are two of my <i>favorite</i> bands</p></div>"
+        )
+
+    def test_unordered_list(self):
+        md = """
+- I love
+- listening to
+- Coil and Autechre
+
+They are two of my _favorite_ bands"""
+        md_html_convert = markdown_to_html_node(md)
+        html = md_html_convert.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li>I love</li><li>listening to</li><li>Coil and Autechre</li></ul><p>They are two of my <i>favorite</i> bands</p></div>"
+        )
+
+    def test_header_HTML_only(self):
+        md = "#### Hope this works **son**!"
+        md_html_convert = markdown_to_html_node(md)
+        html = md_html_convert.to_html()
+        self.assertEqual(
+            html,
+            "<div><h4>Hope this works <b>son</b>!</h4></div>"
+        )
+
+    def test_header_and_para(self):
+        md = """
+# Header Number 1
+
+I was walking down the street when I noticed some _rude_ dudes
+eating pineapple
+in the park.
+"""
+        md_html_convert = markdown_to_html_node(md)
+        html = md_html_convert.to_html()
+        self.assertEqual(
+            html,
+            "<div><h1>Header Number 1</h1><p>I was walking down the street when I noticed some <i>rude</i> dudes eating pineapple in the park.</p></div>"
+        )
+
+    def test_with_quotes(self):
+        md = '''
+# My header
+
+I like to quote people **a lot**.
+Here is a thing someone once said to me:
+
+> "Eat your greens, especially broccoli."
+
+John Balance'''
+        md_html_convert = markdown_to_html_node(md)
+        html = md_html_convert.to_html()
+        self.assertEqual(
+            html,
+            '<div><h1>My header</h1><p>I like to quote people <b>a lot</b>. Here is a thing someone once said to me:</p><blockquote>"Eat your greens, especially broccoli."</blockquote><p>John Balance</p></div>'
+        )
 
 class Test_block_type(unittest.TestCase):
     def test_block_ordlist(self):
