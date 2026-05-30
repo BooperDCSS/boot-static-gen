@@ -14,7 +14,7 @@ from conversions import (
     BlockType,
     markdown_to_html_node,
     header_counter,
-    text_to_children,
+    new_text_to_children,
 )
 
 class Text_md_to_html(unittest.TestCase):

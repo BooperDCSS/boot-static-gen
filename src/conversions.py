@@ -5,7 +5,7 @@ from textnode import TextType, TextNode
 
 # convert full markdown document to single parent HTMLNode with children
 
-def markdown_to_html_node(markdown: str) -> HTMLNode:
+def markdown_to_html_node(markdown: str) -> ParentNode:
     all_children = []
 
     md_blocks = markdown_to_blocks(markdown)
@@ -13,23 +13,23 @@ def markdown_to_html_node(markdown: str) -> HTMLNode:
         block_type = block_to_block_type(block)
         if block_type == BlockType.HEADING:
             all_children.append(ParentNode(
-                f"h{header_counter(block)}", text_to_children(block)
+                f"h{header_counter(block)}", header_to_children(block)
             ))
         elif block_type == BlockType.PARAGRAPH:
             all_children.append(ParentNode(
-               "p", text_to_children(block)
+               "p", para_to_children(block)
             ))
         elif block_type == BlockType.QUOTE:
             all_children.append(ParentNode(
-                "blockquote", text_to_children(block)
+                "blockquote", quote_to_children(block)
             ))
         elif block_type == BlockType.UNORD_LIST:
             all_children.append(ParentNode(
-                "ul", text_to_children(block)
+                "ul", render_li_nodes(block)
             ))
         elif block_type == BlockType.ORD_LIST:
             all_children.append(ParentNode(
-                "ol", text_to_children(block)
+                "ol", render_li_nodes(block)
             ))
         elif block_type == BlockType.CODE:
             all_children.append(ParentNode(
@@ -40,54 +40,74 @@ def markdown_to_html_node(markdown: str) -> HTMLNode:
 
     return ParentNode("div", all_children)
 
-
-def text_to_children(md: str) -> list[HTMLNode]:
+# better separation of responsibility with this version
+# simply receives text and converts it, first to a text node, then to HTML node
+# returns a list of HTML nodes
+def new_text_to_children(text: str) -> list[HTMLNode]:
     child_list = []
-    if md.startswith("#"):
-        child_text = md.lstrip("# ")
-        text_node_list = text_to_textnodes(child_text)
-        for node in text_node_list:
-            child_list.append(text_node_to_html_node(node))
-    elif md.startswith(">"):
-        child_text = md.lstrip("> ")
-        text_node_list = text_to_textnodes(child_text)
-        for node in text_node_list:
-            child_list.append(text_node_to_html_node(node))
-    elif md.startswith("- "):
-        child_list.extend(create_li_nodes(md))
-    elif md.startswith("1. "):
-        child_list.extend(create_li_nodes(md))
-    else:
-        child_text = md.lstrip().replace("\n", " ").rstrip()
-        text_node_list = text_to_textnodes(child_text)
-        for node in text_node_list:
-            child_list.append(text_node_to_html_node(node))
-
+    nodes = text_to_textnodes(text)
+    for node in nodes:
+        child_list.append(text_node_to_html_node(node))
     return child_list
 
-# handle codeblock text by skipping the markdown conversion
-def render_codeblock_text(text: str) -> LeafNode:
-    text = text.lstrip("\n```").rstrip("```")
-    code_leaf = text_node_to_html_node(TextNode(text, TextType.CODE_TEXT))
-    return [code_leaf]
-    
-# quick way to create <li> Leaf Nodes for <ul> and <ol>
-def create_li_nodes(md: str) -> list[LeafNode]:
+# this contains a cleaner # strip than my previous version
+# and it utilizes my helper function to decide where content begins
+def header_to_children(block: str) -> list[HTMLNode]:
+    h_count = header_counter(block)
+    child_text = block[h_count + 1 :]
+    if not child_text:
+        raise ValueError(f"Invalid header depth: {h_count}")
+    return new_text_to_children(child_text)
+
+# fixes problem I had with previous version, which would ignore multi-line
+# quotes; also introduces guard for improperlyh formatted quotes
+def quote_to_children(text: str) -> list[HTMLNode]:
+    quote_lines = text.split("\n")
+    clean_quotes = []
+    for line in quote_lines:
+        if not line.startswith(">"):
+            raise ValueError("Missing `>` character: invalid quote block")
+        clean_quotes.append(line.lstrip(">").lstrip())
+    joined_quote = " ".join(clean_quotes)
+    return new_text_to_children(joined_quote)
+
+def para_to_children(text: str) -> list[HTMLNode]:
+    clean_para = []
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if stripped == "":
+            continue
+        clean_para.append(stripped)
+    joined_para = " ".join(clean_para)
+    return new_text_to_children(joined_para)
+
+def render_li_nodes(text: str) -> list[HTMLNode]:
     li_list = []
 
-    if md.startswith("- "):
-        li_split = md.split("- ")
-    if md.startswith("1. "):
-        li_split = re.split(r"^\d\. ", md, flags=re.MULTILINE)
+    if text.startswith("- "):
+        li_split = re.split(r"^- ", text, flags=re.MULTILINE)
+    elif text.startswith("1. "):
+        li_split = re.split(r"^\d+\. ", text, flags=re.MULTILINE)
+    else:
+        raise ValueError("List node begins with invalid character")
     for entry in li_split:
-        if entry == "\n" or entry == "":
+        if not entry.strip():
             continue
         entry = entry.rstrip("\n")
-        li_list.append(LeafNode("li", entry)) 
+        li_list.append(ParentNode("li", new_text_to_children(entry)))
 
     return li_list
 
-
+# handle codeblock text by skipping the markdown conversion
+# text splicing to avoid issues with lsplit("`\n"), which could get rid of
+# opening code text inside the code block... same reason we did that in the
+# header code refactor
+def render_codeblock_text(text: str) -> LeafNode:
+    text = text[3:-3]
+    text = text.lstrip("\n")
+    code_leaf = text_node_to_html_node(TextNode(text, TextType.CODE_TEXT))
+    return [code_leaf]
+    
 # easy way to get the right heading number from number of # in string
 def header_counter(block: str) -> int:
     count = 0
