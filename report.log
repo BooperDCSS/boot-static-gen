@@ -1,0 +1,12 @@
+2026-05-31 23:41:50,775 (DEBUG): Directory deleted: /home/booper/workspace/bootdev/boot-static-gen/public
+2026-05-31 23:41:50,776 (DEBUG): Directory created: /home/booper/workspace/bootdev/boot-static-gen/public
+2026-05-31 23:41:50,776 (DEBUG): Directory created: /home/booper/workspace/bootdev/boot-static-gen/public/images
+2026-05-31 23:41:50,776 (DEBUG): File `tolkien.png` copied to `/home/booper/workspace/bootdev/boot-static-gen/public/images`
+2026-05-31 23:41:50,776 (DEBUG): Directory `images` copied to `/home/booper/workspace/bootdev/boot-static-gen/public`
+2026-05-31 23:41:50,776 (DEBUG): File `index.css` copied to `/home/booper/workspace/bootdev/boot-static-gen/public`
+2026-05-31 23:42:34,367 (DEBUG): Directory deleted: /home/booper/workspace/bootdev/boot-static-gen/public
+2026-05-31 23:42:34,367 (DEBUG): Directory created: /home/booper/workspace/bootdev/boot-static-gen/public
+2026-05-31 23:42:34,367 (DEBUG): Directory created: /home/booper/workspace/bootdev/boot-static-gen/public/images
+2026-05-31 23:42:34,367 (DEBUG): File `tolkien.png` copied to `/home/booper/workspace/bootdev/boot-static-gen/public/images`
+2026-05-31 23:42:34,367 (DEBUG): Directory `images` copied to `/home/booper/workspace/bootdev/boot-static-gen/public`
+2026-05-31 23:42:34,367 (DEBUG): File `index.css` copied to `/home/booper/workspace/bootdev/boot-static-gen/public`
