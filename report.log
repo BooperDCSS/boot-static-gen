@@ -1,12 +1,21 @@
-2026-05-31 23:41:50,775 (DEBUG): Directory deleted: /home/booper/workspace/bootdev/boot-static-gen/public
-2026-05-31 23:41:50,776 (DEBUG): Directory created: /home/booper/workspace/bootdev/boot-static-gen/public
-2026-05-31 23:41:50,776 (DEBUG): Directory created: /home/booper/workspace/bootdev/boot-static-gen/public/images
-2026-05-31 23:41:50,776 (DEBUG): File `tolkien.png` copied to `/home/booper/workspace/bootdev/boot-static-gen/public/images`
-2026-05-31 23:41:50,776 (DEBUG): Directory `images` copied to `/home/booper/workspace/bootdev/boot-static-gen/public`
-2026-05-31 23:41:50,776 (DEBUG): File `index.css` copied to `/home/booper/workspace/bootdev/boot-static-gen/public`
-2026-05-31 23:42:34,367 (DEBUG): Directory deleted: /home/booper/workspace/bootdev/boot-static-gen/public
-2026-05-31 23:42:34,367 (DEBUG): Directory created: /home/booper/workspace/bootdev/boot-static-gen/public
-2026-05-31 23:42:34,367 (DEBUG): Directory created: /home/booper/workspace/bootdev/boot-static-gen/public/images
-2026-05-31 23:42:34,367 (DEBUG): File `tolkien.png` copied to `/home/booper/workspace/bootdev/boot-static-gen/public/images`
-2026-05-31 23:42:34,367 (DEBUG): Directory `images` copied to `/home/booper/workspace/bootdev/boot-static-gen/public`
-2026-05-31 23:42:34,367 (DEBUG): File `index.css` copied to `/home/booper/workspace/bootdev/boot-static-gen/public`
+2026-06-01 10:28:35,459 (DEBUG): Directory deleted: `/Users/booper/Workspace/bootdev/boot-static-gen/public`
+2026-06-01 10:28:35,459 (INFO): Directory created: `public`
+2026-06-01 10:28:35,459 (INFO): Directory created: `public/images`
+2026-06-01 10:28:35,460 (INFO): File `static/images/tolkien.png` copied to `public/images`
+2026-06-01 10:28:35,460 (INFO): File `static/index.css` copied to `public`
+2026-06-01 10:28:35,460 (INFO): Directory created: `public/testing`
+2026-06-01 10:28:35,462 (INFO): File `static/testing/Pool of Radiance - Adventurers Journal.pdf` copied to `public/testing`
+2026-06-01 10:28:35,462 (INFO): File `static/testing/Kay_Sage-South-to-Southwesterly-Winds-Tomorrow-1957.jpg` copied to `public/testing`
+2026-06-01 10:28:35,463 (INFO): File `static/testing/The-Legend-of-Zelda-Link-PNG-Image.png` copied to `public/testing`
+2026-06-01 10:28:35,463 (INFO): File `static/testing/Kline_Franz-Mahoning-1956.jpg` copied to `public/testing`
+2026-06-01 10:28:35,463 (INFO): Directory created: `public/testing/deeper_folder_test`
+2026-06-01 10:28:35,464 (INFO): File `static/testing/deeper_folder_test/20170217_164222.jpg` copied to `public/testing/deeper_folder_test`
+2026-06-01 10:28:35,465 (INFO): File `static/testing/deeper_folder_test/20170217-SAM_4938.JPG` copied to `public/testing/deeper_folder_test`
+2026-06-01 10:28:35,467 (INFO): File `static/testing/deeper_folder_test/20170217-SAM_4960-EDIT.jpg` copied to `public/testing/deeper_folder_test`
+2026-06-01 10:28:35,469 (INFO): File `static/testing/deeper_folder_test/20170218-SAM_5044.JPG` copied to `public/testing/deeper_folder_test`
+2026-06-01 10:28:35,469 (INFO): File `static/testing/deeper_folder_test/20170217-SAM_4955.jpg` copied to `public/testing/deeper_folder_test`
+2026-06-01 10:57:53,083 (DEBUG): Directory deleted: `/Users/booper/Workspace/bootdev/boot-static-gen/public`
+2026-06-01 10:57:53,083 (INFO): Directory created: `public`
+2026-06-01 10:57:53,083 (INFO): Directory created: `public/images`
+2026-06-01 10:57:53,084 (INFO): File `static/images/tolkien.png` copied to `public/images`
+2026-06-01 10:57:53,084 (INFO): File `static/index.css` copied to `public`
