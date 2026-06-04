@@ -15,7 +15,59 @@ from conversions import (
     markdown_to_html_node,
     header_counter,
     new_text_to_children,
+    extract_title
 )
+
+class extract_title_test(unittest.TestCase):
+
+    def test_proper_header(self):
+        md = """
+# This is my header
+
+Here is some text for you to parse
+
+## A second header appears!
+
+But this won't grab it"""
+        title_value = extract_title(md)
+        self.assertEqual(
+            title_value,
+            "This is my header"
+        )
+
+
+    def test_two_headers(self):
+        md = """
+# Danger!
+
+This text has
+
+# Two H1 headers!"""
+        with self.assertRaises(Exception):
+            extract_title(md)
+
+    def test_no_headers(self):
+        md = """
+I don't have a real header here.
+Not even a double header.
+
+## Though this should throw an error as well"""
+        with self.assertRaises(Exception):
+            extract_title(md)
+
+    def test_header_after_para(self):
+        md = """
+Note: I wrote this without giving it a title first. It's intentional.
+
+# I love Autechre
+
+Listen to them."""
+        title_value = extract_title(md)
+        self.assertEqual(
+            title_value,
+            "I love Autechre"
+        )
+
 
 class Text_md_to_html(unittest.TestCase):
 
@@ -120,6 +172,7 @@ in the park.
             html,
             "<div><h1>Header Number 1</h1><p>I was walking down the street when I noticed some <i>rude</i> dudes eating pineapple in the park.</p></div>"
         )
+
 
     def test_with_quotes(self):
         md = '''
@@ -435,7 +488,7 @@ class Test_Text_to_HTML_node(unittest.TestCase):
         )
         html_node = text_node_to_html_node(text_node)
         self.assertEqual(html_node.tag, "img")
-        self.assertEqual(html_node.value, "")
+        self.assertEqual(html_node.value, "This is Squarepusher")
         self.assertEqual(
             html_node.props,
             {"src": "https://squarepusher.net/sp.jpg", "alt": "This is Squarepusher"},

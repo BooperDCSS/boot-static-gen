@@ -1,7 +1,10 @@
 import re
+import logging
 from enum import Enum
 from htmlnode import HTMLNode, LeafNode, ParentNode
 from textnode import TextType, TextNode
+
+logger = logging.getLogger(__name__)
 
 # convert full markdown document to single parent HTMLNode with children
 
@@ -40,6 +43,26 @@ def markdown_to_html_node(markdown: str) -> ParentNode:
 
     return ParentNode("div", all_children)
 
+def extract_title(markdown: str) -> str:
+    h1_count = 0
+    header_text = ""
+    if not markdown.startswith("# "):
+        logger.debug("File does not begin with `#` - recommend editing file to begin with title header")
+    md_blocks = markdown_to_blocks(markdown)
+    for block in md_blocks:
+        block_type = block_to_block_type(block)
+        if (block_type == BlockType.HEADING
+                and header_counter(block) == 1):
+            h1_count += 1
+            header_text += block
+    if h1_count < 1:
+        raise Exception("No title header found; .md files must contain a single <h1> title header (# Title)")
+    elif h1_count > 1:
+        raise Exception("Multiple title headers found; .md files can contain only one <h1> title header")
+    else:
+        header_text = header_text[h1_count + 1 :].strip()
+    return header_text
+
 # better separation of responsibility with this version
 # simply receives text and converts it, first to a text node, then to HTML node
 # returns a list of HTML nodes
@@ -67,7 +90,7 @@ def quote_to_children(text: str) -> list[HTMLNode]:
     for line in quote_lines:
         if not line.startswith(">"):
             raise ValueError("Missing `>` character: invalid quote block")
-        clean_quotes.append(line.lstrip(">").lstrip())
+        clean_quotes.append(line.lstrip(">").strip())
     joined_quote = " ".join(clean_quotes)
     return new_text_to_children(joined_quote)
 
@@ -133,7 +156,7 @@ def text_node_to_html_node(text_node: TextNode) -> LeafNode:
     if text_node.text_type == TextType.LINK:
         return LeafNode("a", text_node.text, {"href": text_node.url})
     if text_node.text_type == TextType.IMAGE:
-        return LeafNode("img", "", {"src": text_node.url, "alt": text_node.text})
+        return LeafNode("img", text_node.text, {"src": text_node.url, "alt": text_node.text})
 
 # Returns block type based on individual blocks of Markdown
 
@@ -230,6 +253,10 @@ def split_nodes_image(nodes: list[TextNode]) -> list[TextNode]:
     new_nodes = []
 
     for node in nodes:
+        if node.text_type != TextType.PLAIN_TEXT:
+            new_nodes.append(node)
+            continue
+
         image_data = extract_markdown_images(node.text)
         the_text = node.text
 
@@ -240,6 +267,7 @@ def split_nodes_image(nodes: list[TextNode]) -> list[TextNode]:
         for i in range(len(image_data)):
             img_text = image_data[i][0]
             img_url = image_data[i][1]
+
             the_text = the_text.split(f"![{img_text}]({img_url})", maxsplit=1)
             if len(the_text) != 2:
                 raise ValueError("Invalid markdown; image tag not closed")
@@ -290,3 +318,4 @@ def extract_markdown_images(text: str) -> tuple[str, str]:
 def extract_markdown_links(text: str) -> tuple[str, str]:
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
+
